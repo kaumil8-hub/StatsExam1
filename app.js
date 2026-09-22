@@ -3,11 +3,11 @@
   const all = window.STATS_QUESTIONS || [];
   const examConfig = window.STATS_EXAM_CONFIG || {};
   const letters = ['A', 'B', 'C', 'D'];
-  const key = 'orbg8028-progress-v2';
+  const key = 'orbg8028-progress-v3';
   const saved = JSON.parse(localStorage.getItem(key) || '{}');
   const state = {
     screen: 'home', mode: 'study', selectedTopics: new Set(), queue: [], index: 0,
-    correct: 0, answered: 0, currentChoice: null, responses: [], examName: '',
+    correct: 0, answered: 0, currentChoice: null, responses: [], examName: '', examType: '',
     remainingSeconds: 0, timerId: null,
     missed: new Set(saved.missed || []), mastered: new Set(saved.mastered || [])
   };
@@ -31,9 +31,11 @@
     stopTimer();
     state.screen = 'home'; state.mode = 'study'; state.selectedTopics.clear();
     const byKind = Object.fromEntries(['theory','application','calculation'].map(k => [k, all.filter(q=>q.kind===k).length]));
-    layout(`<section class="hero"><p class="eyebrow">Temple · Fall 2026 · Updated review</p><h2>Learn it in practice. Prove it under exam conditions.</h2><p class="hero-copy">The question bank now follows the updated September 21 review and includes dedicated theory, application, and calculation practice.</p><div class="stat-row"><div class="stat"><strong>${all.length}</strong><span>multiple-choice questions</span></div><div class="stat"><strong>${topics.length}</strong><span>exam topic groups</span></div><div class="stat"><strong>${state.missed.size}</strong><span>questions to revisit</span></div></div></section>
-    <section class="panel exam-panel"><div class="panel-head"><div><p class="eyebrow dark">Exam section</p><h3>Choose an exam</h3><p class="panel-sub">Answers and explanations are hidden until submission. Formulas remain available, matching the professor’s review.</p></div><span class="review-chip">80-minute full exam</span></div><div class="exam-grid">
+    const promptCount=all.filter(q=>q.practice).length;
+    layout(`<section class="hero"><p class="eyebrow">Temple · Fall 2026 · Complete updated review</p><h2>Rebuilt from the review, page by page.</h2><p class="hero-copy">Every active question is newly written from the September 21 PDF. Each one is mapped to its review page and learning objective—none of the old bank is used.</p><div class="stat-row"><div class="stat"><strong>${all.length}</strong><span>brand-new questions</span></div><div class="stat"><strong>${examConfig.sourcePages||14}</strong><span>review slides audited</span></div><div class="stat"><strong>${promptCount}</strong><span>professor-prompt questions</span></div></div></section>
+    <section class="panel exam-panel"><div class="panel-head"><div><p class="eyebrow dark">Exam section</p><h3>Choose an exam</h3><p class="panel-sub">The professor-practice option concentrates on the exact scenarios and calculations posed in the review. Answers stay hidden until submission.</p></div><span class="review-chip">New review-mapped bank</span></div><div class="exam-grid">
       <button class="exam-option featured" data-exam="full"><span class="exam-icon">★</span><strong>Full Mock Exam</strong><span>50 questions · 80 minutes</span><small>26 theory · 16 application · 8 calculation</small></button>
+      <button class="exam-option review-focus" data-exam="review"><span class="exam-icon">◎</span><strong>Professor Review Practice</strong><span>40 questions · 60 minutes</span><small>Review scenarios · worked-data variations</small></button>
       <button class="exam-option" data-exam="theory"><span class="type-dot theory"></span><strong>Theory Exam</strong><span>30 questions · 45 minutes</span><small>${byKind.theory} questions available</small></button>
       <button class="exam-option" data-exam="application"><span class="type-dot application"></span><strong>Application Exam</strong><span>25 questions · 40 minutes</span><small>${byKind.application} questions available</small></button>
       <button class="exam-option" data-exam="calculation"><span class="type-dot calculation"></span><strong>Calculation Exam</strong><span>20 questions · 35 minutes</span><small>${byKind.calculation} questions available</small></button>
@@ -62,7 +64,7 @@
   function renderStudyQuestion() {
     if (state.index >= state.queue.length) return studyResults();
     const q=state.queue[state.index], pct=(state.index/state.queue.length)*100;
-    layout(`<div class="quiz-layout"><section class="panel question-card"><div class="question-meta"><span>${esc(q.topic)}</span><span class="type-badge ${q.kind}">${kindLabel(q.kind)}</span><span>Question ${state.index+1} of ${state.queue.length}</span></div><div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div><h2>${esc(q.question)}</h2><div class="answers">${answerButtons(q)}</div><div id="feedback"></div><div class="next-row"><button class="primary" id="next" hidden>Next question</button></div></section>${studySidebar()}</div>`);
+    layout(`<div class="quiz-layout"><section class="panel question-card"><div class="question-meta"><span>${esc(q.topic)}</span><span class="type-badge ${q.kind}">${kindLabel(q.kind)}</span><span class="source-badge">Review p. ${esc(q.page)}</span><span>Question ${state.index+1} of ${state.queue.length}</span></div><div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div><h2>${esc(q.question)}</h2><div class="answers">${answerButtons(q)}</div><div id="feedback"></div><div class="next-row"><button class="primary" id="next" hidden>Next question</button></div></section>${studySidebar()}</div>`);
     document.querySelectorAll('.answer').forEach(b=>b.onclick=()=>answerStudy(Number(b.dataset.i)));
     document.querySelector('#next').onclick=nextStudy; document.querySelector('#home').onclick=home;
   }
@@ -80,18 +82,27 @@
     const q=state.queue[state.index], ok=choice===q.answer; state.currentChoice=choice; state.answered++;
     if(ok){state.correct++;state.mastered.add(q.id);state.missed.delete(q.id);}else{state.missed.add(q.id);state.mastered.delete(q.id);} persist();
     document.querySelectorAll('.answer').forEach((b,i)=>{b.disabled=true;if(i===q.answer)b.classList.add('correct');if(i===choice&&!ok)b.classList.add('wrong');});
-    document.querySelector('#feedback').innerHTML=`<div class="feedback ${ok?'':'wrong'}"><strong>${ok?'Correct':'Not quite — the best answer is '+letters[q.answer]+'.'}</strong>${esc(q.explanation)}</div>`;
+    document.querySelector('#feedback').innerHTML=`<div class="feedback ${ok?'':'wrong'}"><strong>${ok?'Correct':'Not quite — the best answer is '+letters[q.answer]+'.'}</strong><span class="source-note">Review p. ${esc(q.page)} · ${esc(q.objective)}</span>${esc(q.explanation)}</div>`;
     document.querySelector('#next').hidden=false;
   }
   function nextStudy(){if(state.currentChoice===null)return;state.index++;state.currentChoice=null;renderStudyQuestion();}
 
   function pick(source, count) { return shuffle(source).slice(0, Math.min(count, source.length)); }
   function startExam(type) {
-    stopTimer(); state.mode='exam'; state.index=0; state.currentChoice=null; state.responses=[]; state.screen='exam';
+    stopTimer(); state.mode='exam'; state.index=0; state.currentChoice=null; state.responses=[]; state.screen='exam'; state.examType=type;
     if(type==='full') {
       const mix=examConfig.fullExam || {theory:26,application:16,calculation:8};
       state.queue=shuffle([...pick(all.filter(q=>q.kind==='theory'),mix.theory),...pick(all.filter(q=>q.kind==='application'),mix.application),...pick(all.filter(q=>q.kind==='calculation'),mix.calculation)]);
       state.examName='Full Mock Exam'; state.remainingSeconds=(examConfig.durationMinutes||80)*60;
+    } else if(type==='review') {
+      const mix=examConfig.practiceExam || {theory:18,application:14,calculation:8,durationMinutes:60};
+      const professorItems=all.filter(q=>q.practice);
+      state.queue=shuffle([
+        ...pick(all.filter(q=>q.kind==='theory'),mix.theory),
+        ...pick(professorItems.filter(q=>q.kind==='application'),mix.application),
+        ...pick(professorItems.filter(q=>q.kind==='calculation'),mix.calculation)
+      ]);
+      state.examName='Professor Review Practice'; state.remainingSeconds=(mix.durationMinutes||60)*60;
     } else {
       const setup={theory:{count:30,min:45,name:'Theory Exam'},application:{count:25,min:40,name:'Application Exam'},calculation:{count:20,min:35,name:'Calculation Exam'}}[type];
       state.queue=pick(all.filter(q=>q.kind===type),setup.count); state.examName=setup.name; state.remainingSeconds=setup.min*60;
@@ -107,7 +118,7 @@
 
   function renderExamQuestion() {
     const q=state.queue[state.index], selected=state.responses[state.index]?.choice ?? null, pct=(state.index/state.queue.length)*100;
-    layout(`<div class="quiz-layout"><section class="panel question-card exam-question"><div class="question-meta"><span>${esc(state.examName)}</span><span class="type-badge ${q.kind}">${kindLabel(q.kind)}</span><span>Question ${state.index+1} of ${state.queue.length}</span></div><div class="progress-track"><div class="progress-fill exam" style="width:${pct}%"></div></div><h2>${esc(q.question)}</h2><div class="answers">${answerButtons(q,selected)}</div><div class="exam-note">Feedback is shown after you submit the exam.</div><div class="exam-nav"><button class="ghost" id="prev" ${state.index===0?'disabled':''}>Previous</button><button class="primary" id="exam-next">${state.index===state.queue.length-1?'Submit exam':'Next question'}</button></div></section>${examSidebar()}</div>`);
+    layout(`<div class="quiz-layout"><section class="panel question-card exam-question"><div class="question-meta"><span>${esc(state.examName)}</span><span class="type-badge ${q.kind}">${kindLabel(q.kind)}</span><span class="source-badge">Review p. ${esc(q.page)}</span><span>Question ${state.index+1} of ${state.queue.length}</span></div><div class="progress-track"><div class="progress-fill exam" style="width:${pct}%"></div></div><h2>${esc(q.question)}</h2><div class="answers">${answerButtons(q,selected)}</div><div class="exam-note">Feedback is shown after you submit the exam.</div><div class="exam-nav"><button class="ghost" id="prev" ${state.index===0?'disabled':''}>Previous</button><button class="primary" id="exam-next">${state.index===state.queue.length-1?'Submit exam':'Next question'}</button></div></section>${examSidebar()}</div>`);
     document.querySelectorAll('.answer').forEach(b=>b.onclick=()=>selectExamAnswer(Number(b.dataset.i)));
     document.querySelector('#prev').onclick=()=>{saveCurrentExam();state.index--;renderExamQuestion();};
     document.querySelector('#exam-next').onclick=()=>{saveCurrentExam();if(state.index===state.queue.length-1)submitExam(false);else{state.index++;renderExamQuestion();}};
@@ -131,7 +142,7 @@
     const rows=['theory','application','calculation'].map(kind=>{const group=scored.filter(x=>x.q.kind===kind);if(!group.length)return'';const c=group.filter(x=>x.correct).length;return `<div class="result-row"><span><i class="type-dot ${kind}"></i>${kindLabel(kind)}</span><strong>${c}/${group.length} · ${Math.round(c/group.length*100)}%</strong></div>`;}).join('');
     const missed=scored.filter(x=>!x.correct).map(x=>x.q);
     layout(`<section class="panel result"><p class="eyebrow dark">${esc(state.examName)}${timeExpired?' · Time expired':''}</p><div class="score-ring" style="--score:${pct*3.6}deg"><strong>${pct}%</strong></div><h2>Exam submitted</h2><p class="panel-sub">${correct} correct out of ${state.queue.length}. ${pct>=90?'Exam-ready performance. Review the few misses to lock them in.':pct>=75?'You have a solid base. Your type breakdown shows where to focus next.':'Use the weakest category below for your next targeted exam.'}</p><div class="result-breakdown">${rows}</div><div class="controls" style="justify-content:center"><button class="primary" id="review-missed" ${missed.length?'':'disabled'}>Review missed (${missed.length})</button><button class="secondary" id="retry">New ${esc(state.examName)}</button><button class="ghost" id="home">Back to dashboard</button></div></section>`);
-    document.querySelector('#review-missed').onclick=()=>startStudy(missed);document.querySelector('#retry').onclick=()=>startExam(state.examName.startsWith('Full')?'full':state.examName.split(' ')[0].toLowerCase());document.querySelector('#home').onclick=home;
+    document.querySelector('#review-missed').onclick=()=>startStudy(missed);document.querySelector('#retry').onclick=()=>startExam(state.examType);document.querySelector('#home').onclick=home;
   }
 
   function studyResults(){const pct=state.answered?Math.round(state.correct/state.answered*100):0;layout(`<section class="panel result"><div class="score-ring" style="--score:${pct*3.6}deg"><strong>${pct}%</strong></div><h2>Study session complete</h2><p class="panel-sub">${state.correct} correct out of ${state.answered}. ${pct>=90?'Strong work—use the missed bank to close the remaining gaps.':pct>=75?'Good base. Retry missed questions while the explanations are fresh.':'Focus on one topic at a time, then retry the missed bank.'}</p><div class="controls" style="justify-content:center"><button class="primary" id="again">Retry this set</button><button class="secondary" id="review" ${state.missed.size?'':'disabled'}>Study missed (${state.missed.size})</button><button class="ghost" id="home">Dashboard</button></div></section>`);document.querySelector('#again').onclick=()=>startStudy(state.queue);document.querySelector('#review').onclick=()=>startStudy(all.filter(q=>state.missed.has(q.id)));document.querySelector('#home').onclick=home;}

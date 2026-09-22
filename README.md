@@ -1,6 +1,6 @@
 # ORBG 8028 Exam 1 Study App
 
-A dependency-free, mobile-friendly study app built from the ORBG 8028 course slides and the updated September 21, 2026 Exam 1 review.
+A dependency-free, mobile-friendly study app rebuilt question-by-question from all 14 pages of the updated September 21, 2026 Exam 1 review.
 
 ## Run locally
 
@@ -17,6 +17,9 @@ GitHub will display the live URL after deployment finishes.
 
 ## Features
 
+- 126 newly authored questions; the original bank is not loaded
+- Every question is mapped to a review page and learning objective
+- Dedicated 40-question Professor Review Practice exam
 - Full-bank or topic-based study sessions
 - Immediate answer explanations
 - Separate theory, application, and calculation exams
