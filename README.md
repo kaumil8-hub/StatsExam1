@@ -1,6 +1,6 @@
 # ORBG 8028 Exam 1 Study App
 
-A dependency-free, mobile-friendly study app built from the uploaded ORBG 8028 lectures dated August 24 through September 14, 2026.
+A dependency-free, mobile-friendly study app built from the ORBG 8028 course slides and the updated September 21, 2026 Exam 1 review.
 
 ## Run locally
 
@@ -19,6 +19,10 @@ GitHub will display the live URL after deployment finishes.
 
 - Full-bank or topic-based study sessions
 - Immediate answer explanations
+- Separate theory, application, and calculation exams
+- 50-question, 80-minute mixed mock exam
+- Formula sheet available during exams
+- End-of-exam scoring by question type
 - Randomized question order
 - Persistent missed-question and mastered-question tracking
 - Missed-question retry mode

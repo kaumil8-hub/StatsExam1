@@ -1,11 +1,11 @@
 (() => {
   let id = 0;
   const bank = [];
-  const add = (topic, question, correct, wrong, explanation) => {
+  const add = (topic, question, correct, wrong, explanation, kind = null, review = false) => {
     const options = [correct, ...wrong];
     const shift = id % 4;
     const rotated = options.slice(shift).concat(options.slice(0, shift));
-    bank.push({ id: `q${++id}`, topic, question, options: rotated, answer: rotated.indexOf(correct), explanation });
+    bank.push({ id: `q${++id}`, topic, question, options: rotated, answer: rotated.indexOf(correct), explanation, kind, review });
   };
 
   const T = {
@@ -197,5 +197,65 @@
   add(T.evidence, 'Which is an example of gray literature?', 'An unpublished clinical-trial report or conference abstract', ['A standard peer-reviewed original article', 'A commercial textbook chapter', 'A randomized participant list'], 'Conference materials, dissertations, reports, and ongoing or unpublished trials are common gray literature.');
   add(T.evidence, 'A media article discussing someone else’s study is:', 'Not itself original research', ['A primary empirical report', 'A systematic review automatically', 'A measure of construct validity'], 'A summary written by someone who did not conduct and report the study is not the original empirical source.');
 
+  // Updated 9/21 review: targeted theory, application, and calculation items
+  add(T.foundations, 'Why do researchers quantify and measure variables instead of relying only on intuition or experience?', 'To describe observations systematically and reduce the influence of cognitive bias', ['To guarantee that every hypothesis is correct', 'To eliminate the need for clinical judgment', 'To convert every variable into ratio data'], 'Research and statistics provide a systematic check against biases such as availability, confirmation, belief, and attribution errors.', 'theory', true);
+  add(T.measurement, 'Which measurement of oral-hygiene behavior is nominal?', 'Classifying each patient as a powered-brush user or manual-brush user', ['Ranking hygiene as poor, fair, good, or excellent', 'Recording brushing time in seconds', 'Recording plaque score on an equal-interval scale'], 'Powered versus manual is an unordered category, so it is nominal.', 'application', true);
+  add(T.measurement, 'Which measurement of oral-hygiene behavior is ordinal?', 'Rating behavior as poor, fair, good, or excellent', ['Recording the exact number of brushing seconds', 'Classifying toothbrush color', 'Recording daily brushing frequency with a true zero and meaningful ratios'], 'The categories have a meaningful order, but the distance between adjacent categories is not known to be equal.', 'application', true);
+  add(T.measurement, 'Which is the clearest ratio-level measurement of oral-hygiene behavior?', 'Total brushing time in seconds per day', ['Toothbrush type', 'Poor/fair/good hygiene ranking', 'Calendar year of the appointment'], 'Time has equal intervals and a true zero, so ratios such as twice as long are meaningful.', 'application', true);
+  add(T.variables, 'A study tests whether D3 versus D4 clinic grade predicts patient satisfaction, residency acceptance, and later earnings. What is the independent variable?', 'Clinic grade or year level (D3 versus D4)', ['Patient satisfaction only', 'Residency acceptance only', 'Later earnings only'], 'The D3/D4 grouping is the proposed predictor; the other measures are outcomes.', 'application', true);
+  add(T.variables, 'In the D3/D4 clinic study, which set contains the dependent variables?', 'Patient satisfaction, residency acceptance, and later earnings', ['D3 versus D4 status only', 'Sample size and confidence level', 'Clinic instructor and exam date'], 'These are the outcomes the investigators are attempting to explain or predict.', 'application', true);
+  add(T.measurement, 'Residency acceptance recorded as accepted versus not accepted is:', 'Nominal and dichotomous', ['Ordinal and continuous', 'Interval and continuous', 'Ratio and continuous'], 'The two categories have no numerical distance or inherent magnitude.', 'application', true);
+  add(T.measurement, 'Annual earnings measured in dollars are generally:', 'Continuous ratio data', ['Nominal data', 'Ordinal data', 'Interval data without a true zero'], 'Dollar earnings have equal units and a meaningful zero, permitting ratio comparisons.', 'application', true);
+  add(T.variables, 'Which is the strongest operational definition of patient satisfaction?', 'Total score on a specified validated patient-satisfaction questionnaire administered after care', ['How happy the patient seems', 'The general idea of enjoying care', 'Whether the researcher expects satisfaction'], 'An operational definition identifies the exact observable procedure used to measure the construct.', 'application', true);
+  add(T.questions, 'A new implant procedure is expected to last longer than the standard procedure. Which is the best directional research hypothesis?', 'Implants placed with the new procedure will have longer survival times than implants placed with the standard procedure.', ['The two procedures will have equal survival times.', 'Implant procedure and survival may be related somehow.', 'What is the average lifespan of an implant?'], 'The hypothesis predicts both the variables and the expected direction of the difference.', 'application', true);
+  add(T.errors, 'For the implant study, which is the appropriate null hypothesis?', 'Mean implant survival does not differ between the new and standard procedures.', ['The new procedure lasts longer.', 'The standard procedure always fails.', 'Implant survival cannot be measured.'], 'The null states no population difference between the procedures.', 'application', true);
+  add(T.errors, 'Researchers conclude that the new implant procedure lasts longer when it truly does not. This is:', 'A Type I error', ['A Type II error', 'A correct rejection of the null', 'A correct failure to reject the null'], 'They rejected a true null hypothesis—a false-positive conclusion.', 'application', true);
+  add(T.errors, 'The new implant procedure truly lasts longer, but researchers fail to detect the improvement. This is:', 'A Type II error', ['A Type I error', 'A correct rejection of the null', 'A measurement scale error'], 'They failed to reject a false null hypothesis—a false negative.', 'application', true);
+  add(T.questions, 'Which is the best PICO question for the implant scenario?', 'In adults receiving dental implants, does the new placement procedure, compared with the standard procedure, increase implant survival time?', ['What are dental implants?', 'Are new implant procedures good?', 'Why do implants sometimes fail?'], 'It identifies the population, intervention, comparison, and measurable outcome.', 'application', true);
+  add(T.reliability, 'Two examiners score plaque on the same patients and their scores are highly correlated. This primarily supports:', 'Inter-rater reliability', ['Test-retest reliability', 'Predictive validity', 'External validity'], 'Agreement between different examiners evaluates inter-rater or inter-observer consistency.', 'application', true);
+  add(T.studyValidity, 'Plaque examiners know which students received the intervention. What is the most direct concern?', 'Observer or measurement bias threatening internal validity', ['A guaranteed Type II error', 'Low external validity caused only by sample size', 'Parallel-forms reliability'], 'Lack of blinding can influence how examiners score the outcome, creating an alternative explanation for group differences.', 'application', true);
+  add(T.reliability, 'Providing all students with the same toothbrush and toothpaste mainly helps by:', 'Standardizing the measurement conditions and reducing instrumentation-related variation', ['Making the sample representative of every population', 'Eliminating all participant dropout', 'Changing plaque score into nominal data'], 'Keeping equipment and conditions consistent reduces unwanted measurement variation and alternative explanations.', 'application', true);
+  add(T.studyValidity, 'Using only one educational condition within each school can help prevent students in different conditions from exchanging intervention information. This primarily reduces:', 'Treatment contamination or diffusion', ['Regression to the mean', 'A mathematical rounding error', 'Predictive-validity error'], 'Separating conditions can keep the control group from being exposed to the intervention through classmates.', 'application', true);
+
+  add(T.center, 'For the review data set 3, 7, 5, 9, 7, 5, 5, 12, 9, 4, what is the mean?', '6.6', ['5.0', '6.0', '7.0'], 'The sum is 66 and n = 10, so mean = 66 ÷ 10 = 6.6.', 'calculation', true);
+  add(T.center, 'For the ordered review data set 3, 4, 5, 5, 5, 7, 7, 9, 9, 12, what is the median?', '6', ['5', '6.6', '7'], 'With 10 scores, average the 5th and 6th values: (5 + 7) ÷ 2 = 6.', 'calculation', true);
+  add(T.center, 'For the review data set 3, 7, 5, 9, 7, 5, 5, 12, 9, 4, what is the mode?', '5', ['6', '7', '9'], 'The value 5 occurs three times, more than any other value.', 'calculation', true);
+  add(T.distribution, 'For the ordered data 3, 4, 5, 5, 5, 7, 7, 9, 9, 12, what are Q1 and Q3 using the median-of-halves method?', 'Q1 = 5 and Q3 = 9', ['Q1 = 4 and Q3 = 12', 'Q1 = 5 and Q3 = 7', 'Q1 = 6 and Q3 = 9'], 'The lower half is 3,4,5,5,5 (median 5); the upper half is 7,7,9,9,12 (median 9).', 'calculation', true);
+  add(T.distribution, 'For Q1 = 5 and Q3 = 9, what is the interquartile range?', '4', ['−4', '5', '14'], 'IQR = Q3 − Q1 = 9 − 5 = 4.', 'calculation', true);
+  add(T.distribution, 'For Q1 = 5, Q3 = 9, and IQR = 4, what are the lower and upper outlier fences?', '−1 and 15', ['1 and 13', '−4 and 18', '5 and 9'], '1.5 × IQR = 6. Lower fence = 5 − 6 = −1; upper fence = 9 + 6 = 15.', 'calculation', true);
+  add(T.distribution, 'Using outlier fences of −1 and 15, how many outliers are in 3, 4, 5, 5, 5, 7, 7, 9, 9, 12?', '0', ['1', '2', '3'], 'Every value lies between −1 and 15, so none meet the 1.5-IQR outlier rule.', 'calculation', true);
+  add(T.zci, 'The review data have mean 6.6 and SD 2.6. What is the z-score for x = 1?', 'Approximately −2.15', ['Approximately −0.85', 'Approximately 1.31', 'Approximately 2.15'], 'z = (1 − 6.6) ÷ 2.6 = −5.6 ÷ 2.6 ≈ −2.15.', 'calculation', true);
+  add(T.zci, 'The review data have mean 6.6 and SD 2.6. What is the z-score for x = 10?', 'Approximately 1.31', ['Approximately −1.31', 'Approximately 0.77', 'Approximately 3.40'], 'z = (10 − 6.6) ÷ 2.6 = 3.4 ÷ 2.6 ≈ 1.31.', 'calculation', true);
+  add(T.zci, 'If mean = 6.6, SD = 2.6, and z = −0.85, what is the corresponding raw score?', 'Approximately 4.39', ['Approximately 2.21', 'Approximately 5.75', 'Approximately 8.81'], 'Rearrange z = (x − mean)/SD: x = mean + z(SD) = 6.6 + (−0.85)(2.6) = 4.39.', 'calculation', true);
+  add(T.zci, 'A z-score of approximately −2.15 corresponds most closely to which percentile?', 'About the 1.6th percentile', ['About the 19.8th percentile', 'About the 50th percentile', 'About the 98.4th percentile'], 'The cumulative area below z = −2.15 is approximately 0.0158, or 1.6%.', 'calculation', true);
+  add(T.zci, 'A z-score of approximately 1.31 corresponds most closely to which percentile?', 'About the 90.5th percentile', ['About the 9.5th percentile', 'About the 50th percentile', 'About the 99.9th percentile'], 'The cumulative area below z = 1.31 is approximately 0.9049, or 90.5%.', 'calculation', true);
+  add(T.zci, 'A z-score of −0.85 corresponds most closely to which percentile?', 'About the 19.8th percentile', ['About the 8.5th percentile', 'About the 50th percentile', 'About the 80.2nd percentile'], 'The cumulative area below z = −0.85 is approximately 0.1977, or 19.8%.', 'calculation', true);
+  add(T.zci, 'For mean = 6.6, SD = 2.6, n = 10, and a 95% critical z of 1.96, what is the approximate confidence interval?', '4.99 to 8.21', ['4.00 to 9.20', '5.78 to 7.42', '1.50 to 11.70'], 'SE = 2.6/√10 ≈ 0.822. Margin = 1.96(0.822) ≈ 1.61. CI = 6.6 ± 1.61 = 4.99 to 8.21.', 'calculation', true);
+  add(T.zci, 'A test has mean 80 and SD 6. What is the z-score for a score of 92?', '2.00', ['1.00', '1.50', '12.00'], 'z = (92 − 80) ÷ 6 = 12 ÷ 6 = 2.00.', 'calculation', true);
+  add(T.zci, 'A distribution has mean 70 and SD 8. What raw score corresponds to z = 1.5?', '82', ['74', '78', '105'], 'x = mean + z(SD) = 70 + 1.5(8) = 82.', 'calculation', true);
+  add(T.zci, 'A sample has mean 50, SD 10, and n = 25. Using z* = 1.96, what is the 95% CI?', '46.08 to 53.92', ['40.00 to 60.00', '48.04 to 51.96', '30.40 to 69.60'], 'SE = 10/√25 = 2. Margin = 1.96(2) = 3.92. CI = 50 ± 3.92.', 'calculation', true);
+  add(T.errors, 'If alpha = .05 for a two-tailed test, how much alpha is placed in each tail?', '.025', ['.05', '.10', '.95'], 'The total .05 error probability is split evenly: .05 ÷ 2 = .025 per tail.', 'calculation', true);
+  add(T.errors, 'If beta = .20, what is statistical power?', '.80', ['.20', '.05', '1.20'], 'Power = 1 − beta = 1 − .20 = .80.', 'calculation', true);
+
+  const calculationPattern = /what is the (mean|median|mode|z-score|interquartile range|95% ci)|what raw score|outlier fence|percentile|power\?|alpha is placed|equals:/i;
+  const applicationPattern = /study|researcher|patient|dentist|clinic|implant|survey|examiner|participants|toothbrush|oral-hygiene|oral hygiene|which measurement|operational definition/i;
+  bank.forEach(q => {
+    if (!q.kind) q.kind = calculationPattern.test(q.question) ? 'calculation' : applicationPattern.test(q.question) ? 'application' : 'theory';
+  });
+
   window.STATS_QUESTIONS = bank;
+  window.STATS_EXAM_CONFIG = {
+    updatedReview: 'September 21, 2026',
+    durationMinutes: 80,
+    fullExam: { total: 50, theory: 26, application: 16, calculation: 8 },
+    formulas: [
+      'Mean = Σx / n',
+      'IQR = Q3 − Q1',
+      'Outlier fences = Q1 − 1.5(IQR), Q3 + 1.5(IQR)',
+      'z = (x − mean) / SD',
+      'x = mean + z(SD)',
+      '95% CI = sample mean ± 1.96(SD / √n)',
+      'Power = 1 − β'
+    ]
+  };
 })();
